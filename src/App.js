@@ -1,41 +1,47 @@
-import React from 'react';
-import Login from './components/Login';
-import Header from './components/Header';
-import CreatePost from './components/CreatePost';
-import PostList from './components/PostList';
+import React from "react";
+import Login from "./components/Login";
+import Header from "./components/Header";
+import CreatePost from "./components/CreatePost";
+import PostList from "./components/PostList";
+import postReducer from "./reducer";
 
-const functionsCount = new Set();
+export const UserContext = React.createContext();
+export const PostContext = React.createContext({
+  posts: []
+});
 
 function App() {
-  const [user, setUser] = React.useState('ANTone');
-  const [posts, setPosts] = React.useState([]);
-  const [count, setCount] = React.useState(0);
+  const initialPostState = React.useContext(PostContext);
+  const [state, dispatch] = React.useReducer(postReducer, initialPostState);
+  const [user, setUser] = React.useState("reed");
+  // const [posts, setPosts] = React.useState([]);
 
   React.useEffect(() => {
-    document.title = user ? `${user}'s Feed` : 'Please login';
+    document.title = user ? `${user}'s Feed` : "Please login";
   }, [user]);
 
-  const handleAddPost = React.useCallback(
-    (newPost) => {
-      setPosts([newPost, ...posts]);
-    },
-    [posts]
-  );
-
-  functionsCount.add(handleAddPost);
-  console.log(functionsCount);
+  // const handleAddPost = React.useCallback(
+  //   newPost => {
+  //     setPosts([newPost, ...posts]);
+  //   },
+  //   [posts]
+  // );
 
   if (!user) {
     return <Login setUser={setUser} />;
   }
 
   return (
-    <>
-      <Header user={user} setUser={setUser} />
-      <CreatePost user={user} handleAddPost={handleAddPost} />
-      <PostList posts={posts} />
-      <button onClick={() => setCount((prev) => prev + 1)}>{count} +</button>
-    </>
+    <PostContext.Provider value={{ state, dispatch }}>
+      <UserContext.Provider value={user}>
+        <Header user={user} setUser={setUser} />
+        <CreatePost
+          user={user}
+          //  handleAddPost={handleAddPost}
+        />
+        <PostList posts={state.posts} />
+      </UserContext.Provider>
+    </PostContext.Provider>
   );
 }
 
